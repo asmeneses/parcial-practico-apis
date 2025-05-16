@@ -7,9 +7,12 @@ import { AeropuertoModule } from './aeropuerto/aeropuerto.module';
 import { AerolineaEntity } from './aerolinea/aerolinea.entity';
 import { AeropuertoEntity } from './aeropuerto/aeropuerto.entity';
 import { AerolineaAeropuertoModule } from './aerolinea-aeropuerto/aerolinea-aeropuerto.module';
+import { SeedService } from './seed.service';
 
 @Module({
-  imports: [AerolineaModule, AeropuertoModule,
+  imports: [
+    AerolineaModule,
+    AeropuertoModule,
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: 'localhost',
@@ -21,9 +24,10 @@ import { AerolineaAeropuertoModule } from './aerolinea-aeropuerto/aerolinea-aero
       dropSchema: true,
       synchronize: true
     }),
+    TypeOrmModule.forFeature([AerolineaEntity, AeropuertoEntity]),
     AerolineaAeropuertoModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, SeedService],
 })
 export class AppModule {}

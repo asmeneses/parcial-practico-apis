@@ -23,6 +23,11 @@ export class AeropuertoService {
     }
 
     async create(aeropuerto: AeropuertoEntity): Promise<AeropuertoEntity> {
+        // Validar nombre único
+        const existing = await this.aeropuertoRepository.findOne({ where: { nombre: aeropuerto.nombre } });
+        if (existing)
+            throw new BusinessLogicException("An airport with the given name already exists", BusinessError.PRECONDITION_FAILED);
+
         if (!this.isCodigoValido(aeropuerto.codigo))
             throw new BusinessLogicException("The airport code must have exactly three characters", BusinessError.PRECONDITION_FAILED);
         return await this.aeropuertoRepository.save(aeropuerto);

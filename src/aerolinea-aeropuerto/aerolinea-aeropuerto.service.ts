@@ -74,6 +74,10 @@ export class AerolineaAeropuertoService {
         if (!aeropuerto)
             throw new BusinessLogicException('El aeropuerto con el id proporcionado no existe', BusinessError.PRECONDITION_FAILED);
 
+        const asociado = aerolinea.aeropuertos.find(a => a.id === aeropuerto.id);
+        if (!asociado)
+            throw new BusinessLogicException('El aeropuerto no está asociado a la aerolínea', BusinessError.NOT_FOUND);
+
         aerolinea.aeropuertos = aerolinea.aeropuertos.filter(a => a.id !== aeropuerto.id);
         await this.aerolineaRepository.save(aerolinea);
     }

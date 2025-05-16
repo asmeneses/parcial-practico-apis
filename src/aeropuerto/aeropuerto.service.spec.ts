@@ -73,6 +73,14 @@ describe('AeropuertoService', () => {
         expect.objectContaining({ message: 'The airport code must have exactly three characters' })
       );
     });
+
+    it('should throw if airport name already exists', async () => {
+      const aeropuerto = { id: '1', nombre: 'A1', codigo: 'ABC', pais: 'CO', ciudad: 'Bogotá', aerolineas: [] };
+      jest.spyOn(repo, 'findOne').mockResolvedValueOnce(aeropuerto as any); // Simula que ya existe
+      await expect(service.create(aeropuerto as any)).rejects.toEqual(
+        expect.objectContaining({ message: 'An airport with the given name already exists' })
+      );
+    });
   });
 
   describe('update', () => {

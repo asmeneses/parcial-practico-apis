@@ -1,4 +1,5 @@
-import { IsString, IsDate, IsNotEmpty, IsUrl } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsString, IsNotEmpty, IsUrl, Matches } from 'class-validator';
 
 export class AerolineaDto {
   @IsString()
@@ -9,9 +10,10 @@ export class AerolineaDto {
   @IsNotEmpty()
   readonly descripcion: string;
 
-  @IsDate()
+  @IsString()
   @IsNotEmpty()
-  readonly fechaFundacion: Date;
+  @Matches(/^\d{4}-\d{2}-\d{2}$/, { message: 'fechaFundacion must be in YYYY-MM-DD format' })
+  readonly fechaFundacion: string;
 
   @IsUrl()
   @IsNotEmpty()

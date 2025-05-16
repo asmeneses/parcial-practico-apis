@@ -7,7 +7,6 @@ export class AeropuertoDto {
 
   @IsString()
   @IsNotEmpty()
-  @Length(3, 3)
   readonly codigo: string;
 
   @IsString()

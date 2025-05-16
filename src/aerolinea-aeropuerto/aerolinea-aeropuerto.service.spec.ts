@@ -12,7 +12,14 @@ describe('AerolineaAeropuertoService', () => {
 
   const aeropuerto: AeropuertoEntity = { id: '1', nombre: 'A1', codigo: 'ABC', pais: 'CO', ciudad: 'Bogotá', aerolineas: [] };
   const aeropuerto2: AeropuertoEntity = { id: '2', nombre: 'A2', codigo: 'DEF', pais: 'CO', ciudad: 'Medellín', aerolineas: [] };
-  const aerolinea: AerolineaEntity = { id: '1', nombre: 'Air1', descripcion: 'desc', fechaFundacion: new Date(), paginaWeb: 'web', aeropuertos: [aeropuerto] };
+  const aerolinea: AerolineaEntity = {
+    id: '1',
+    nombre: 'Air1',
+    descripcion: 'desc',
+    fechaFundacion: '2000-01-01',
+    paginaWeb: 'web',
+    aeropuertos: [aeropuerto]
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -169,6 +176,34 @@ describe('AerolineaAeropuertoService', () => {
       await expect(service.deleteAirportFromAirline('1', '999')).rejects.toEqual(
         expect.objectContaining({ message: 'El aeropuerto con el id proporcionado no existe' })
       );
+    });
+
+    it('should throw BusinessLogicException when deleting an airport not associated to the airline', async () => {
+      // Aerolínea con lista vacía de aeropuertos
+      const aerolineaNoAsociada = {
+        id: '3',
+        nombre: 'Air3',
+        descripcion: 'desc3',
+        fechaFundacion: '2010-01-01',
+        paginaWeb: 'web3',
+        aeropuertos: [], // array vacío
+      };
+      // Aeropuerto existente pero NO asociado
+      const aeropuertoNoAsociado = {
+        id: '3',
+        nombre: 'A3',
+        codigo: 'GHI',
+        pais: 'CO',
+        ciudad: 'Cali',
+        aerolineas: [],
+      };
+
+      jest.spyOn(aerolineaRepo, 'findOne').mockResolvedValue(aerolineaNoAsociada as any);
+      jest.spyOn(aeropuertoRepo, 'findOne').mockResolvedValue(aeropuertoNoAsociado as any);
+
+      await expect(
+        service.deleteAirportFromAirline(aerolineaNoAsociada.id, aeropuertoNoAsociado.id)
+      ).rejects.toMatchObject({ message: 'El aeropuerto no está asociado a la aerolínea' });
     });
   });
 });

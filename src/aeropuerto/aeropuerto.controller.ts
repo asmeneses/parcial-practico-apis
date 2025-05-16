@@ -29,6 +29,7 @@ export class AeropuertoController {
     @Put(':id')
     async update(@Param('id') id: string, @Body() aeropuertoDto: AeropuertoDto) {
         const aeropuerto: AeropuertoEntity = plainToInstance(AeropuertoEntity, aeropuertoDto);
+        aeropuerto.id = id;
         return await this.aeropuertoService.update(id, aeropuerto);
     }
 

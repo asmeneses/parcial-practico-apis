@@ -29,6 +29,7 @@ export class AerolineaController {
     @Put(':id')
     async update(@Param('id') id: string, @Body() aerolineaDto: AerolineaDto) {
         const aerolinea: AerolineaEntity = plainToInstance(AerolineaEntity, aerolineaDto);
+        aerolinea.id = id; // Asegura que el id esté presente
         return await this.aerolineaService.update(id, aerolinea);
     }
 

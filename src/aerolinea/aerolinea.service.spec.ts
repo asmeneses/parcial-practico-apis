@@ -10,12 +10,12 @@ describe('AerolineaService', () => {
   let repo: Repository<AerolineaEntity>;
 
   const now = new Date();
-  const pastDate = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
-  const futureDate = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate());
+  const pastDateString = `${now.getFullYear() - 1}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const futureDateString = `${now.getFullYear() + 1}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
   const aerolineaArray = [
-    { id: '1', nombre: 'A1', descripcion: 'desc', fechaFundacion: pastDate, paginaWeb: 'web', aeropuertos: [] },
-    { id: '2', nombre: 'A2', descripcion: 'desc', fechaFundacion: pastDate, paginaWeb: 'web', aeropuertos: [] },
+    { id: '1', nombre: 'A1', descripcion: 'desc', fechaFundacion: pastDateString, paginaWeb: 'web', aeropuertos: [] },
+    { id: '2', nombre: 'A2', descripcion: 'desc', fechaFundacion: pastDateString, paginaWeb: 'web', aeropuertos: [] },
   ];
 
   beforeEach(async () => {
@@ -66,21 +66,54 @@ describe('AerolineaService', () => {
 
   describe('create', () => {
     it('should create an airline with valid past date', async () => {
-      const aerolinea = { ...aerolineaArray[0], fechaFundacion: pastDate };
+      const aerolinea = { ...aerolineaArray[0], fechaFundacion: pastDateString, descripcion: 'desc' };
       jest.spyOn(repo, 'save').mockResolvedValue(aerolinea as any);
       const result = await service.create(aerolinea as any);
       expect(result).toEqual(aerolinea);
     });
 
     it('should throw if foundation date is in the future', async () => {
-      const aerolinea = { ...aerolineaArray[0], fechaFundacion: futureDate };
+      const aerolinea = { ...aerolineaArray[0], fechaFundacion: futureDateString, descripcion: 'desc' };
       await expect(service.create(aerolinea as any)).rejects.toEqual(
         expect.objectContaining({ message: 'The foundation date must be in the past' })
       );
     });
 
     it('should throw if foundation date is missing', async () => {
-      const aerolinea = { ...aerolineaArray[0], fechaFundacion: undefined };
+      const aerolinea = { ...aerolineaArray[0], fechaFundacion: undefined, descripcion: 'desc' };
+      await expect(service.create(aerolinea as any)).rejects.toEqual(
+        expect.objectContaining({ message: 'The foundation date must be in the past' })
+      );
+    });
+
+    it('should throw if airline name already exists', async () => {
+      const aerolinea = { ...aerolineaArray[0] };
+      jest.spyOn(repo, 'findOne').mockResolvedValueOnce(aerolinea as any); // Simula que ya existe
+      await expect(service.create(aerolinea as any)).rejects.toEqual(
+        expect.objectContaining({ message: 'An airline with the given name already exists' })
+      );
+    });
+
+    it('should throw if foundation date format is invalid', async () => {
+      const aerolinea = { ...aerolineaArray[0], fechaFundacion: '2023/01/01' }; // Formato inválido
+      jest.spyOn(repo, 'findOne').mockResolvedValueOnce(null); // No existe nombre repetido
+      await expect(service.create(aerolinea as any)).rejects.toEqual(
+        expect.objectContaining({ message: 'The foundation date must be in the past' })
+      );
+    });
+
+    it('should throw if foundation date is not a real date', async () => {
+      const aerolinea = { ...aerolineaArray[0], fechaFundacion: '2023-02-35' }; // Fecha inválida
+      jest.spyOn(repo, 'findOne').mockResolvedValueOnce(null); // No existe nombre repetido
+      await expect(service.create(aerolinea as any)).rejects.toEqual(
+        expect.objectContaining({ message: 'The foundation date must be in the past' })
+      );
+    });
+
+    it('should throw if foundation date is not a real date (e.g. 2023-02-30)', async () => {
+      const aerolinea = { ...aerolineaArray[0], fechaFundacion: '2023-02-30' };
+      jest.spyOn(repo, 'findOne').mockResolvedValueOnce(null);
+      jest.spyOn(service as any, 'isFechaFundacionValida').mockReturnValue(false); // Forzar error
       await expect(service.create(aerolinea as any)).rejects.toEqual(
         expect.objectContaining({ message: 'The foundation date must be in the past' })
       );
@@ -89,7 +122,7 @@ describe('AerolineaService', () => {
 
   describe('update', () => {
     it('should update an airline with valid past date', async () => {
-      const aerolinea = { ...aerolineaArray[0], nombre: 'Nuevo', fechaFundacion: pastDate };
+      const aerolinea = { ...aerolineaArray[0], nombre: 'Nuevo', fechaFundacion: pastDateString, descripcion: 'desc' };
       jest.spyOn(repo, 'findOne').mockResolvedValue(aerolineaArray[0] as any);
       jest.spyOn(repo, 'save').mockResolvedValue(aerolinea as any);
       const result = await service.update('1', aerolinea as any);
@@ -105,7 +138,7 @@ describe('AerolineaService', () => {
 
     it('should throw if foundation date is in the future', async () => {
       jest.spyOn(repo, 'findOne').mockResolvedValue(aerolineaArray[0] as any);
-      const aerolinea = { ...aerolineaArray[0], fechaFundacion: futureDate };
+      const aerolinea = { ...aerolineaArray[0], fechaFundacion: futureDateString, descripcion: 'desc' };
       await expect(service.update('1', aerolinea as any)).rejects.toEqual(
         expect.objectContaining({ message: 'The foundation date must be in the past' })
       );
@@ -113,7 +146,7 @@ describe('AerolineaService', () => {
 
     it('should throw if foundation date is missing', async () => {
       jest.spyOn(repo, 'findOne').mockResolvedValue(aerolineaArray[0] as any);
-      const aerolinea = { ...aerolineaArray[0], fechaFundacion: undefined };
+      const aerolinea = { ...aerolineaArray[0], fechaFundacion: undefined, descripcion: 'desc' };
       await expect(service.update('1', aerolinea as any)).rejects.toEqual(
         expect.objectContaining({ message: 'The foundation date must be in the past' })
       );

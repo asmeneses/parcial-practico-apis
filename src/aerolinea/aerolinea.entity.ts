@@ -12,8 +12,8 @@ export class AerolineaEntity {
     @Column()
     descripcion: string;
 
-    @Column()
-    fechaFundacion: Date;
+    @Column({ type: 'date' })
+    fechaFundacion: string;
 
     @Column()
     paginaWeb: string;
